@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}QR Scanner - Garage Inventory{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h3 class="mb-0">📱 Scan Box QR Code</h3>
+            </div>
+            <div class="card-body text-center">
+                <p class="lead">Point your camera at a box QR code to view its contents</p>
+                
+                <!-- Video element for camera feed -->
+                <div id="scanner-container" style="position: relative; width: 100%; max-width: 500px; margin: 0 auto;">
+                    <video id="video" style="width: 100%; border-radius: 10px; border: 2px solid #007bff;"></video>
+                    <canvas id="canvas" style="display: none;"></canvas>
+                </div>
+                
+                <p class="text-muted mt-3">
+                    <small>Allow camera access when prompted</small>
+                </p>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get video element
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const canvasContext = canvas.getContext('2d', { willReadFrequently: true });
+    
+    // Request camera access
+    navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'environment' },
+        audio: false 
+    }).then(function(stream) {
+        console.log('Camera access granted');
+        video.srcObject = stream;
+        video.play();
+        
+        // Start scanning
+        scanQRCode();
+    }).catch(function(error) {
+        console.error('Error accessing camera:', error);
+        document.getElementById('scanner-container').innerHTML = 
+            '<div class="alert alert-danger">Unable to access camera. Please check permissions.</div>';
+    });
+    
+    function scanQRCode() {
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            // Set canvas size to match video
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            // Draw video frame to canvas
+            canvasContext.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Get image data
+            const imageData = canvasContext.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            
+            // Scan for QR code
+            const code = jsQR(data, canvas.width, canvas.height);
+            
+            if (code) {
+                console.log('QR Code found:', code.data);
+                
+                // Extract box ID from URL
+                // URL format: /qr/1, /qr/2, etc.
+                const match = code.data.match(/\/qr\/(\d+)/);
+                if (match) {
+                    const boxId = match[1];
+                    console.log('Box ID:', boxId);
+                    
+                    // Stop camera
+                    video.srcObject.getTracks().forEach(track => track.stop());
+                    
+                    // Redirect to box
+                    window.location.href = '/qr/' + boxId;
+                } else {
+                    console.log('QR code does not contain a valid box URL');
+                    alert('This QR code is not a valid Garage Inventory box code.');
+                }
+            }
+        }
+        
+        // Continue scanning
+        requestAnimationFrame(scanQRCode);
+    }
+});
+</script>
+{% endblock %}
