@@ -437,10 +437,12 @@ if __name__ == '__main__':
         print("⏹️  Press CTRL+C to stop the server\n")
         
         app.run(
-            debug=False,  # Disable debug mode temporarily
-            host='0.0.0.0',  # ← CHANGE: Listen on all interfaces
+            debug=True,  # Disable debug mode temporarily
+            host='0.0.0.0',  # Listen on all interfaces
             port=8000,
-            use_reloader=False
+            
+            
+
         )
     except Exception as e:
         print(f"❌ Error starting Flask app:")
