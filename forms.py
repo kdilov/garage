@@ -4,9 +4,8 @@ from wtforms import StringField, PasswordField, TextAreaField, FloatField, Integ
 from wtforms.validators import DataRequired, Email, EqualTo, Length, Optional, NumberRange, ValidationError
 from models import User
 
-# Registration Form
+
 class RegistrationForm(FlaskForm):
-    """Form for new user registration"""
     username = StringField('Username', 
                           validators=[
                               DataRequired(message='Username is required'),
@@ -35,21 +34,17 @@ class RegistrationForm(FlaskForm):
     submit = SubmitField('Register')
     
     def validate_username(self, username):
-        """Custom validator: Check if username already exists"""
         user = User.query.filter_by(username=username.data).first()
         if user:
             raise ValidationError('Username already exists. Please choose a different one.')
     
     def validate_email(self, email):
-        """Custom validator: Check if email already exists"""
         user = User.query.filter_by(email=email.data).first()
         if user:
             raise ValidationError('Email already registered. Please use a different one.')
 
 
-# Login Form
 class LoginForm(FlaskForm):
-    """Form for user login"""
     username = StringField('Username', 
                           validators=[DataRequired(message='Username is required')])
     
@@ -59,9 +54,7 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Login')
 
 
-# Box Form (for creating and editing boxes)
 class BoxForm(FlaskForm):
-    """Form for creating/editing storage boxes"""
     name = StringField('Box Name', 
                       validators=[
                           DataRequired(message='Box name is required'),
@@ -80,9 +73,7 @@ class BoxForm(FlaskForm):
     submit = SubmitField('Save Box')
 
 
-# Item Form (for creating and editing items)
 class ItemForm(FlaskForm):
-    """Form for creating/editing items in boxes"""
     name = StringField('Item Name', 
                       validators=[
                           DataRequired(message='Item name is required'),
@@ -115,9 +106,7 @@ class ItemForm(FlaskForm):
     submit = SubmitField('Save Item')
 
 
-# Search Form (for searching boxes and items)
 class SearchForm(FlaskForm):
-    """Form for searching boxes and items"""
     search_query = StringField('Search', 
                               validators=[
                                   DataRequired(message='Please enter a search term'),

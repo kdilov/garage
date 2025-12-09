@@ -17,4 +17,5 @@ dependencies = [
     "pytest-flask>=1.3.0",
     "python-dotenv>=1.2.1",
     "qrcode>=8.2",
+    "shell>=1.0.1",
 ]
