@@ -10,6 +10,8 @@ import traceback
 import qrcode
 import io
 from base64 import b64encode
+from admin import init_admin
+
 
 
 # Initialize Flask app
@@ -22,6 +24,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Initialize extensions with the app
 db.init_app(app)
 login_manager.init_app(app)
+init_admin(app)
 login_manager.login_view = 'login'
 login_manager.login_message = 'Please log in to access this page.'
 login_manager.login_message_category = 'info'
@@ -429,7 +432,7 @@ if __name__ == '__main__':
             db.create_all()
             print("✅ Database tables created successfully!")
         
-        # Run the development server
+        # Run the server
         print("\n🌐 Starting Flask app...")
         print("📍 Open your browser to: http://localhost:8000/")
         print("   or try: http://127.0.0.1:8000/")
@@ -437,8 +440,8 @@ if __name__ == '__main__':
         print("⏹️  Press CTRL+C to stop the server\n")
         
         app.run(
-            debug=True,  # Disable debug mode temporarily
-            host='0.0.0.0',  # Listen on all interfaces
+            debug=False,  
+            host='0.0.0.0',  
             port=8000,
             
             
