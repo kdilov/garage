@@ -6,6 +6,7 @@ A Flask-based web application for managing storage boxes in your garage using QR
 
 - **User Authentication** - Secure registration and login with password hashing
 - **Box Management** - Create, edit, and delete storage boxes with locations and descriptions
+- **Image Upload** - Add photos to boxes for easy visual identification (supports JPG, PNG, GIF, WebP up to 16MB)
 - **Item Tracking** - Add items to boxes with quantity, category, value, and notes
 - **QR Code Generation** - Automatic QR code creation for each box
 - **Mobile QR Scanner** - Scan QR codes directly in your browser using your phone's camera
@@ -58,13 +59,33 @@ A Flask-based web application for managing storage boxes in your garage using QR
 
 4. Open your browser and navigate to `http://localhost:8000`
 
+### Development with ngrok (Mobile Access)
+
+To access the app from your phone for QR scanning:
+
+```bash
+uv run python run_dev.py
+```
+
+This starts both Flask and ngrok, providing a public URL you can use on your mobile device.
+
 ## Usage
 
 1. **Register** a new account
 2. **Create boxes** representing your physical storage containers
-3. **Add items** to each box with details like quantity and value
-4. **Print QR codes** and attach them to your physical boxes
-5. **Scan QR codes** with your phone to quickly view box contents
+3. **Add a photo** to each box for easy identification (optional)
+4. **Add items** to each box with details like quantity and value
+5. **Print QR codes** and attach them to your physical boxes
+6. **Scan QR codes** with your phone to quickly view box contents
+
+### Box Images
+
+When creating or editing a box, you can:
+- Upload an image (JPG, PNG, GIF, or WebP format, max 16MB)
+- Replace an existing image by uploading a new one
+- Delete an existing image using the checkbox option
+
+Images are displayed on the box detail page and as thumbnails in the box list.
 
 ## Admin Setup
 
@@ -119,7 +140,7 @@ garage-inventory/
 ├── forms.py            # Flask-WTF form definitions
 ├── admin.py            # Flask-Admin configuration
 ├── extensions.py       # Flask extensions initialisation
-├── migrate_admin.py    # Database migration for admin field
+├── run_dev.py          # Development launcher (Flask + ngrok)
 ├── templates/          # Jinja2 HTML templates
 │   ├── base.html
 │   ├── index.html
@@ -134,7 +155,8 @@ garage-inventory/
 │   └── components/
 │       └── flashmessages.html
 ├── static/
-│   └── qrcodes/        # Generated QR code images
+│   ├── qrcodes/        # Generated QR code images
+│   └── images/         # Uploaded box images
 ├── tests/              # Test suite
 │   ├── conftest.py
 │   ├── functional/
