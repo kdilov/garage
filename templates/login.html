@@ -39,6 +39,13 @@
                         {% endif %}
                     </div>
                     
+                    <!-- Forgot Password Link -->
+                    <div class="mb-3 text-end">
+                        <a href="{{ url_for('forgot_password') }}" class="text-muted small">
+                            Forgot your password?
+                        </a>
+                    </div>
+                    
                     <!-- Submit Button -->
                     <div class="d-grid">
                         {{ form.submit(class="btn btn-primary btn-lg") }}

@@ -1,10 +1,9 @@
 # forms.py
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, TextAreaField, FloatField, IntegerField, SubmitField
+from wtforms import StringField, PasswordField, TextAreaField, FloatField, IntegerField, SubmitField, BooleanField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, Optional, NumberRange, ValidationError
-from models import User
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, PasswordField, TextAreaField, FloatField, IntegerField, SubmitField, BooleanField  
+from models import User
 
 
 class RegistrationForm(FlaskForm):
@@ -54,6 +53,34 @@ class LoginForm(FlaskForm):
                             validators=[DataRequired(message='Password is required')])
     
     submit = SubmitField('Login')
+
+
+class ForgotPasswordForm(FlaskForm):
+    """Form for requesting password reset"""
+    email = StringField('Email', 
+                       validators=[
+                           DataRequired(message='Email is required'),
+                           Email(message='Invalid email address')
+                       ])
+    
+    submit = SubmitField('Send Reset Link')
+
+
+class ResetPasswordForm(FlaskForm):
+    """Form for setting new password"""
+    password = PasswordField('New Password', 
+                            validators=[
+                                DataRequired(message='Password is required'),
+                                Length(min=8, message='Password must be at least 8 characters long')
+                            ])
+    
+    confirm_password = PasswordField('Confirm New Password',
+                                    validators=[
+                                        DataRequired(message='Please confirm your password'),
+                                        EqualTo('password', message='Passwords must match')
+                                    ])
+    
+    submit = SubmitField('Reset Password')
 
 
 class BoxForm(FlaskForm):

@@ -3,6 +3,8 @@ from extensions import db
 from flask_login import UserMixin
 from datetime import datetime, timezone
 from werkzeug.security import generate_password_hash, check_password_hash
+from itsdangerous import URLSafeTimedSerializer
+from flask import current_app
 
 
 class User(UserMixin, db.Model):
@@ -22,6 +24,25 @@ class User(UserMixin, db.Model):
     
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+    
+    def get_reset_token(self):
+        """Generate a password reset token."""
+        serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+        return serializer.dumps(self.email, salt='password-reset-salt')
+    
+    @staticmethod
+    def verify_reset_token(token, expiry=3600):
+        """Verify a password reset token and return the user if valid."""
+        serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+        try:
+            email = serializer.loads(
+                token,
+                salt='password-reset-salt',
+                max_age=expiry
+            )
+        except Exception:
+            return None
+        return User.query.filter_by(email=email).first()
     
     def __repr__(self):
         return f'<User {self.username}>'
@@ -49,7 +70,7 @@ class Box(db.Model):
         return len(self.items)
     
     def total_value(self):
-        return sum(item.value * item.quantity for item in self.items)
+        return sum(item.value * item.quantity for item in self.items if item.value)
 
 
 class Item(db.Model):
