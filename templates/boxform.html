@@ -10,7 +10,7 @@
                 <h3 class="mb-0">{{ title }}</h3>
             </div>
             <div class="card-body">
-                <form method="POST" action="">
+                <form method="POST" action="" enctype="multipart/form-data">
                     {{ form.hidden_tag() }}
                     
                     <!-- Box Name -->
@@ -44,6 +44,33 @@
                         {{ form.description.label(class="form-label") }}
                         {{ form.description(class="form-control", rows="4") }}
                     </div>
+                    <!-- Image Upload -->
+                    <div class="mb-3">
+                        {{ form.image.label(class="form-label") }}
+                        {{ form.image(class="form-control" + (" is-invalid" if form.image.errors else "")) }}
+                        <div class="form-text">Accepted formats: JPG, PNG, GIF, WebP (max 16MB)</div>
+                        {% if form.image.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.image.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Current Image Preview (only when editing) -->
+                    {% if box and box.image_path %}
+                    <div class="mb-3">
+                        <label class="form-label">Current Image</label>
+                        <div class="border rounded p-2 bg-light">
+                            <img src="/{{ box.image_path }}" alt="Current box image" class="img-fluid rounded" style="max-height: 200px;">
+                        </div>
+                        <div class="form-check mt-2">
+                            {{ form.delete_image(class="form-check-input") }}
+                            {{ form.delete_image.label(class="form-check-label text-danger") }}
+                        </div>
+                    </div>
+                    {% endif %}
                     
                     <!-- Submit Button -->
                     <div class="d-grid gap-2">

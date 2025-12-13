@@ -10,6 +10,12 @@
                 <h2 class="mb-0">{{ box.name }}</h2>
             </div>
             <div class="card-body">
+                <!-- Box Image -->
+                {% if box.image_path %}
+                <div class="mb-3 text-center">
+                    <img src="/{{ box.image_path }}" alt="{{ box.name }}" class="img-fluid rounded" style="max-height: 300px;">
+                </div>
+                {% endif %}
                 <p><strong>🎯 Position:</strong> {{ box.location or 'Not specified' }}</p>
                 <p><strong>📝 Description:</strong> {{ box.description or 'No description' }}</p>
                 <p><strong>📦 Total Items:</strong> {{ box.item_count() }}</p>

@@ -3,6 +3,8 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, TextAreaField, FloatField, IntegerField, SubmitField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, Optional, NumberRange, ValidationError
 from models import User
+from flask_wtf.file import FileField, FileAllowed
+from wtforms import StringField, PasswordField, TextAreaField, FloatField, IntegerField, SubmitField, BooleanField  
 
 
 class RegistrationForm(FlaskForm):
@@ -69,6 +71,13 @@ class BoxForm(FlaskForm):
     
     description = TextAreaField('Description', 
                                validators=[Optional()])
+    
+    image = FileField('Box Image', 
+                     validators=[
+                         FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'webp'], 'Images only (jpg, png, gif, webp)!')
+                     ])
+    
+    delete_image = BooleanField('Delete current image')
     
     submit = SubmitField('Save Box')
 

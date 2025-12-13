@@ -35,6 +35,7 @@ class Box(db.Model):
     location = db.Column(db.String(200))
     description = db.Column(db.Text)
     qr_code_path = db.Column(db.String(255))
+    image_path = db.Column(db.String(255)) 
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)

@@ -11,6 +11,8 @@ import qrcode
 import io
 from base64 import b64encode
 from admin import init_admin
+from werkzeug.utils import secure_filename
+import uuid
 
 
 
@@ -19,6 +21,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dev-secret-key-change-in-production'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///inventory.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 
 
 
 # Initialize extensions with the app
@@ -68,6 +71,41 @@ def generate_qr_code(box_id, box_name):
     except Exception as e:
         print(f"Error generating QR code: {e}")
         return None
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def save_box_image(file, box_id):
+    """Save an uploaded image for a box and return the file path."""
+    try:
+        if file and allowed_file(file.filename):
+            img_dir = 'static/images'
+            if not os.path.exists(img_dir):
+                os.makedirs(img_dir)
+            
+            ext = file.filename.rsplit('.', 1)[1].lower()
+            filename = f"box_{box_id}_{uuid.uuid4().hex[:8]}.{ext}"
+            filepath = os.path.join(img_dir, filename)
+            file.save(filepath)
+            return filepath
+    except Exception as e:
+        print(f"Error saving image: {e}")
+    return None
+
+
+def delete_box_image(image_path):
+    """Delete a box image file from the filesystem."""
+    try:
+        if image_path and os.path.exists(image_path):
+            os.remove(image_path)
+            return True
+    except Exception as e:
+        print(f"Error deleting image: {e}")
+    return False
 
 
 # User loader for Flask-Login
@@ -175,7 +213,6 @@ def create_box():
     
     if form.validate_on_submit():
         try:
-            # Create new box
             box = Box(
                 name=form.name.data,
                 location=form.location.data,
@@ -183,15 +220,18 @@ def create_box():
                 user_id=current_user.id
             )
             
-            # Add to database first to get the ID
             db.session.add(box)
             db.session.flush()
             
-            # Generate QR code with the box ID
             qr_path = generate_qr_code(box.id, box.name)
             box.qr_code_path = qr_path
             
-            # Commit the changes
+            # Handle image upload
+            if form.image.data:
+                image_path = save_box_image(form.image.data, box.id)
+                if image_path:
+                    box.image_path = image_path
+            
             db.session.commit()
             
             flash(f'Box "{box.name}" created successfully!', 'success')
@@ -229,6 +269,19 @@ def edit_box(box_id):
             box.name = form.name.data
             box.location = form.location.data
             box.description = form.description.data
+            
+            # Handle image deletion
+            if form.delete_image.data and box.image_path:
+                delete_box_image(box.image_path)
+                box.image_path = None
+            # Handle new image upload
+            elif form.image.data:
+                if box.image_path:
+                    delete_box_image(box.image_path)
+                image_path = save_box_image(form.image.data, box.id)
+                if image_path:
+                    box.image_path = image_path
+            
             db.session.commit()
             flash(f'Box "{box.name}" updated successfully!', 'success')
             return redirect(url_for('view_box', box_id=box.id))
@@ -252,6 +305,10 @@ def delete_box(box_id):
         return redirect(url_for('dashboard'))
     try:
         box_name = box.name
+        if box.image_path:
+            delete_box_image(box.image_path)
+        if box.qr_code_path and os.path.exists(box.qr_code_path):
+            os.remove(box.qr_code_path)
         db.session.delete(box)
         db.session.commit()
         flash(f'Box "{box_name}" deleted successfully!', 'success')
