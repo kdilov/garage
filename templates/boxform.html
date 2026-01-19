@@ -63,7 +63,7 @@
                     <div class="mb-3">
                         <label class="form-label">Current Image</label>
                         <div class="border rounded p-2 bg-light">
-                            <img src="/{{ box.image_path }}" alt="Current box image" class="img-fluid rounded" style="max-height: 200px;">
+                            <img src="{{ get_file_url(box.image_path) }}" alt="Current box image" class="img-fluid rounded" style="max-height: 200px;">
                         </div>
                         <div class="form-check mt-2">
                             {{ form.delete_image(class="form-check-input") }}
@@ -80,7 +80,7 @@
             </div>
             {% if box %}
             <div class="card-footer">
-                <a href="{{ url_for('view_box', box_id=box.id) }}" class="btn btn-secondary">Cancel</a>
+                <a href="{{ url_for('boxes.view_box', box_id=box.id) }}" class="btn btn-secondary">Cancel</a>
             </div>
             {% endif %}
         </div>

@@ -10,7 +10,7 @@
         <!-- Search Form -->
         <div class="card shadow mb-4">
             <div class="card-body">
-                <form method="GET" action="{{ url_for('search') }}" class="row g-3">
+                <form method="GET" action="{{ url_for('scanner.search') }}" class="row g-3">
                     <!-- Search Query -->
                     <div class="col-md-6">
                         <label for="q" class="form-label">Search Term</label>
@@ -52,7 +52,7 @@
                         <button type="submit" class="btn btn-primary">
                             🔍 Search
                         </button>
-                        <a href="{{ url_for('search') }}" class="btn btn-secondary">Clear</a>
+                        <a href="{{ url_for('scanner.search') }}" class="btn btn-secondary">Clear</a>
                     </div>
                 </form>
             </div>
@@ -74,12 +74,12 @@
                                             <h5 class="card-title">{{ box.name }}</h5>
                                             <p class="card-text">
                                                 <strong>🎯 Position:</strong> {{ box.location or 'Not specified' }}<br>
-                                                <strong>📦 Items:</strong> {{ box.item_count() }}<br>
-                                                <strong>💷 Value:</strong> £{{ "%.2f"|format(box.total_value()) }}
+                                                <strong>📦 Items:</strong> {{ box.item_count }}<br>
+                                                <strong>💷 Value:</strong> £{{ "%.2f"|format(box.total_value) }}
                                             </p>
                                         </div>
                                         <div class="card-footer bg-transparent">
-                                            <a href="{{ url_for('view_box', box_id=box.id) }}" class="btn btn-sm btn-primary">
+                                            <a href="{{ url_for('boxes.view_box', box_id=box.id) }}" class="btn btn-sm btn-primary">
                                                 View Details
                                             </a>
                                         </div>
@@ -116,7 +116,7 @@
                                     <tr>
                                         <td>{{ item.name }}</td>
                                         <td>
-                                            <a href="{{ url_for('view_box', box_id=item.box.id) }}">
+                                            <a href="{{ url_for('boxes.view_box', box_id=item.box.id) }}">
                                                 {{ item.box.name }}
                                             </a>
                                         </td>
@@ -124,7 +124,7 @@
                                         <td>{{ item.category or '—' }}</td>
                                         <td>£{{ "%.2f"|format(item.value) }}</td>
                                         <td>
-                                            <a href="{{ url_for('edit_item', item_id=item.id) }}" class="btn btn-sm btn-warning">
+                                            <a href="{{ url_for('items.edit_item', item_id=item.id) }}" class="btn btn-sm btn-warning">
                                                 ✏️ Edit
                                             </a>
                                         </td>

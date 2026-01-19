@@ -8,3 +8,14 @@ wheels/
 
 # Virtual environments
 .venv
+
+
+.env
+*.db
+inventory.db
+__pycache__/
+*.pyc
+.venv/
+instance/
+src/instance/
+.DS_Store

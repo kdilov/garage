@@ -15,7 +15,7 @@
             <a class="navbar-brand" href="/">📦 Garage Inventory</a>
             <!-- Search Form (only show if logged in) -->
                 {% if current_user.is_authenticated %}
-                <form class="d-flex me-3" method="GET" action="{{ url_for('search') }}" style="width: 250px;">
+                <form class="d-flex me-3" method="GET" action="{{ url_for('scanner.search') }}" style="width: 250px;">
                     <input 
                         class="form-control form-control-sm me-2" 
                         type="search" 
@@ -36,15 +36,15 @@
         </li>
         {% if current_user.is_authenticated %}
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+                <a class="nav-link" href="{{ url_for('boxes.dashboard') }}">Dashboard</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('search') }}">
+                <a class="nav-link" href="{{ url_for('scanner.search') }}">
                     🔍 Search
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('scanner') }}">
+                <a class="nav-link" href="{{ url_for('scanner.scanner') }}">
                     📱 Scan QR
                 </a>
             </li>
@@ -52,14 +52,14 @@
                 <span class="nav-link">Hello, {{ current_user.username }}!</span>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                <a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a>
             </li>
         {% else %}
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+                <a class="nav-link" href="{{ url_for('auth.register') }}">Register</a>
             </li>
         {% endif %}
     </ul>

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}My Boxes - Garage Inventory{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>My Storage Boxes</h1>
+            <a href="{{ url_for('create_box') }}" class="btn btn-success btn-lg">
+                ➕ Add New Box
+            </a>
+        </div>
+        
+        {% if boxes %}
+            <div class="row">
+                {% for box in boxes %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 shadow-sm">
+                            {% if box.image_path %}
+                            <img src="/{{ box.image_path }}" class="card-img-top" alt="{{ box.name }}" style="height: 150px; object-fit: cover;">
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="card-title">{{ box.name }}</h5>
+                                <p class="card-text">
+                                    <strong>🎯 Position:</strong> {{ box.location or 'Not specified' }}<br>
+                                    <strong>📦 Items:</strong> {{ box.item_count() }}<br>
+                                    <strong>💷 Value:</strong> £{{ "%.2f"|format(box.total_value()) }}
+                                </p>
+                                {% if box.description %}
+                                    <p class="card-text text-muted small">{{ box.description[:50] }}...</p>
+                                {% endif %}
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <a href="{{ url_for('view_box', box_id=box.id) }}" class="btn btn-sm btn-primary">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <h4 class="alert-heading">No boxes yet!</h4>
+                <p class="mb-0">You haven't created any storage boxes yet. Click the "Add New Box" button to get started!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
