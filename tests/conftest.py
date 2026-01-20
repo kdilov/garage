@@ -1,26 +1,31 @@
 # tests/conftest.py
-import pytest
+"""Pytest configuration and fixtures for the test suite."""
 import os
 import tempfile
-from app import app as flask_app
-from extensions import db
-from models import User, Box, Item
+
+import pytest
+
+from garage import create_app
+from garage.extensions import db
+from garage.models import User, Box, Item
 
 
 @pytest.fixture(scope='module')
 def test_app():
+    """Create application for testing."""
     db_fd, db_path = tempfile.mkstemp()
     
-    flask_app.config.update({
-        'TESTING': True,
+    app = create_app('testing')
+    app.config.update({
         'SQLALCHEMY_DATABASE_URI': f'sqlite:///{db_path}',
         'WTF_CSRF_ENABLED': False,
-        'SECRET_KEY': 'test-secret-key'
+        'SECRET_KEY': 'test-secret-key',
+        'TESTING': True,
     })
     
-    with flask_app.app_context():
+    with app.app_context():
         db.create_all()
-        yield flask_app
+        yield app
         db.drop_all()
     
     os.close(db_fd)
@@ -29,17 +34,21 @@ def test_app():
 
 @pytest.fixture(scope='module')
 def test_client(test_app):
+    """Create test client."""
     return test_app.test_client()
 
 
 @pytest.fixture(scope='module')
 def init_database(test_app):
+    """Initialize database with test data."""
     with test_app.app_context():
+        # Create test user
         test_user = User(username='testuser', email='test@example.com')
         test_user.set_password('testpassword123')
         db.session.add(test_user)
         db.session.commit()
         
+        # Create test box
         test_box = Box(
             name='Test Box',
             location='Garage',
@@ -49,6 +58,7 @@ def init_database(test_app):
         db.session.add(test_box)
         db.session.commit()
         
+        # Create test item
         test_item = Item(
             name='Test Item',
             quantity=5,
@@ -65,6 +75,7 @@ def init_database(test_app):
 
 @pytest.fixture(scope='function')
 def new_user():
+    """Create a new user instance (not saved to DB)."""
     user = User(username='newuser', email='new@example.com')
     user.set_password('newpassword123')
     return user
@@ -72,6 +83,7 @@ def new_user():
 
 @pytest.fixture(scope='function')
 def new_box():
+    """Create a new box instance (not saved to DB)."""
     return Box(
         name='New Box',
         location='Shed',
@@ -82,6 +94,7 @@ def new_box():
 
 @pytest.fixture(scope='function')
 def new_item():
+    """Create a new item instance (not saved to DB)."""
     return Item(
         name='New Item',
         quantity=3,
@@ -91,10 +104,21 @@ def new_item():
     )
 
 
+@pytest.fixture(scope='function')
+def logged_in_client(test_client, init_database):
+    """Provide a test client that's logged in as testuser."""
+    test_client.post('/login', data={
+        'username': 'testuser',
+        'password': 'testpassword123'
+    }, follow_redirects=True)
+    yield test_client
+    test_client.get('/logout', follow_redirects=True)
+
+
 @pytest.fixture(scope='function', autouse=True)
 def cleanup_qr_codes():
+    """Clean up QR codes after tests."""
     yield
-    import shutil
     qr_dir = 'static/qrcodes'
     if os.path.exists(qr_dir):
         for file in os.listdir(qr_dir):
