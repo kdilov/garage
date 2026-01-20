@@ -1,169 +1,178 @@
-# 📦 Garage Inventory System
+# Garage Inventory System
 
-A Flask-based web application for managing storage boxes in your garage using QR codes. Scan a box with your phone to instantly see what's inside.
+A Flask web application for managing storage boxes using QR codes. Scan a box with your phone to instantly see what's inside.
 
 ## Features
 
-- **User Authentication** - Secure registration and login with password hashing
-- **Box Management** - Create, edit, and delete storage boxes with locations and descriptions
-- **Image Upload** - Add photos to boxes for easy visual identification (supports JPG, PNG, GIF, WebP up to 16MB)
-- **Item Tracking** - Add items to boxes with quantity, category, value, and notes
-- **QR Code Generation** - Automatic QR code creation for each box
-- **Mobile QR Scanner** - Scan QR codes directly in your browser using your phone's camera
+- **User Authentication** - Secure registration and login
+- **Box Management** - Create, edit, and delete storage boxes
+- **Image Upload** - Add photos to boxes (local or S3 storage)
+- **Item Tracking** - Track items with quantity, category, and value
+- **QR Code Generation** - Auto-generated QR codes for each box
+- **Mobile QR Scanner** - Scan QR codes using your phone's camera
 - **Search** - Find boxes and items by name, location, or category
-- **Admin Dashboard** - Flask-Admin panel for administrators to manage all users, boxes, and items
-- **Responsive Design** - Mobile-friendly Bootstrap 5 interface
+- **Admin Dashboard** - Flask-Admin panel for administrators
 
 ## Tech Stack
 
 - **Backend:** Flask, Flask-SQLAlchemy, Flask-Login, Flask-WTF, Flask-Admin
-- **Database:** SQLite
-- **Frontend:** Bootstrap 5, Jinja2 templates
-- **QR Codes:** qrcode library (generation), html5-qrcode (scanning)
-- **Testing:** pytest, pytest-flask, pytest-cov
-
-## Installation
-
-### Prerequisites
-
-- Python 3.12+
-- [uv](https://docs.astral.sh/uv/) (recommended) or pip
-
-### Setup
-
-1. Extract the zip file and navigate to the project folder:
-   ```bash
-   unzip garage-inventory.zip
-   cd garage-inventory
-   ```
-
-2. Install dependencies using uv:
-   ```bash
-   uv sync
-   ```
-
-   Or using pip:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. Run the application:
-   ```bash
-   uv run python app.py
-   ```
-
-   Or without uv:
-   ```bash
-   python app.py
-   ```
-
-4. Open your browser and navigate to `http://localhost:8000`
-
-### Development with ngrok (Mobile Access)
-
-To access the app from your phone for QR scanning:
-
-```bash
-uv run python run_dev.py
-```
-
-This starts both Flask and ngrok, providing a public URL you can use on your mobile device.
-
-## Usage
-
-1. **Register** a new account
-2. **Create boxes** representing your physical storage containers
-3. **Add a photo** to each box for easy identification (optional)
-4. **Add items** to each box with details like quantity and value
-5. **Print QR codes** and attach them to your physical boxes
-6. **Scan QR codes** with your phone to quickly view box contents
-
-### Box Images
-
-When creating or editing a box, you can:
-- Upload an image (JPG, PNG, GIF, or WebP format, max 16MB)
-- Replace an existing image by uploading a new one
-- Delete an existing image using the checkbox option
-
-Images are displayed on the box detail page and as thumbnails in the box list.
-
-## Admin Setup
-
-The application includes an admin dashboard at `/admin/` for managing all data. To grant admin privileges to a user:
-
-### Option 1: Using Python shell
-
-```bash
-uv run python
-```
-
-```python
-from app import app, db
-from models import User
-
-with app.app_context():
-    user = User.query.filter_by(username='your_username').first()
-    user.is_admin = True
-    db.session.commit()
-```
-
-### Option 2: Direct database update
-
-```bash
-sqlite3 instance/inventory.db
-```
-
-```sql
-UPDATE users SET is_admin = 1 WHERE username = 'your_username';
-```
-
-Once set as admin, navigate to `/admin/` to access the dashboard.
-
-## Running Tests
-
-```bash
-uv run pytest
-```
-
-With coverage report:
-
-```bash
-uv run pytest --cov=. --cov-report=html
-```
+- **Database:** SQLite (development) / PostgreSQL (production)
+- **Storage:** Local filesystem (development) / AWS S3 (production)
+- **Frontend:** Bootstrap 5, Jinja2
+- **Deployment:** Heroku, Gunicorn
 
 ## Project Structure
 
 ```
 garage-inventory/
-├── app.py              # Main Flask application
-├── models.py           # SQLAlchemy database models
-├── forms.py            # Flask-WTF form definitions
-├── admin.py            # Flask-Admin configuration
-├── extensions.py       # Flask extensions initialisation
-├── run_dev.py          # Development launcher (Flask + ngrok)
-├── templates/          # Jinja2 HTML templates
-│   ├── base.html
-│   ├── index.html
-│   ├── login.html
-│   ├── register.html
-│   ├── boxlist.html
-│   ├── boxdetail.html
-│   ├── boxform.html
-│   ├── itemform.html
-│   ├── scanner.html
-│   ├── search.html
-│   └── components/
-│       └── flashmessages.html
-├── static/
-│   ├── qrcodes/        # Generated QR code images
-│   └── images/         # Uploaded box images
-├── tests/              # Test suite
-│   ├── conftest.py
-│   ├── functional/
-│   └── unit/
-└── pyproject.toml      # Project dependencies
+├── src/garage/              # Application package
+│   ├── __init__.py          # App factory (create_app)
+│   ├── __main__.py          # Entry point for python -m garage
+│   ├── config.py            # Configuration classes
+│   ├── extensions.py        # Flask extensions
+│   ├── forms.py             # WTForms definitions
+│   ├── admin.py             # Flask-Admin setup
+│   ├── logging_config.py    # Structured logging
+│   ├── models/              # SQLAlchemy models
+│   │   ├── user.py
+│   │   ├── box.py
+│   │   └── item.py
+│   ├── routes/              # Route blueprints
+│   │   ├── auth.py          # Login, register, password reset
+│   │   ├── boxes.py         # Box CRUD
+│   │   ├── items.py         # Item CRUD
+│   │   ├── scanner.py       # QR scanning, search
+│   │   └── main.py          # Landing page, health check
+│   ├── services/            # Business logic
+│   │   ├── email_service.py
+│   │   ├── qr_service.py
+│   │   └── storage/         # File storage backends
+│   │       ├── base.py      # Abstract interface
+│   │       ├── local.py     # Local filesystem
+│   │       ├── s3.py        # AWS S3
+│   │       └── factory.py   # Backend selection
+│   └── utils/
+│       └── decorators.py    # @owns_box, @owns_item
+├── templates/               # Jinja2 templates
+├── static/                  # Static files (CSS, images, QR codes)
+├── tests/                   # Test suite
+├── pyproject.toml           # Dependencies and project config
+├── Procfile                 # Heroku process definition
+└── .env                     # Environment variables (not in git)
+```
+
+## Installation
+
+### Prerequisites
+
+- Python 3.11+
+- [uv](https://docs.astral.sh/uv/) package manager
+
+### Local Development
+
+1. Clone and install dependencies:
+   ```bash
+   git clone <repo-url>
+   cd garage-inventory
+   uv sync
+   ```
+
+2. Create `.env` file:
+   ```bash
+   FLASK_ENV=development
+   SECRET_KEY=dev-secret-key
+   ```
+
+3. Run the application:
+   ```bash
+   uv run python -m garage
+   ```
+
+4. Open http://localhost:8005
+
+### Running with Flask CLI
+
+```bash
+flask --app garage:create_app run --port 8005
+```
+
+## Configuration
+
+Configuration is managed through environment variables and `src/garage/config.py`.
+
+### Environment Variables
+
+**Core Settings**
+
+- `FLASK_ENV` - Environment: `development`, `production`, or `testing` (default: `development`)
+- `SECRET_KEY` - Flask secret key (required in production)
+- `DATABASE_URL` - Database connection string (defaults to SQLite in development)
+
+**Storage Settings**
+
+- `STORAGE_BACKEND` - Storage type: `local` or `s3` (default: `local` in dev, `s3` in prod)
+- `S3_BUCKET_NAME` - AWS S3 bucket name (required if using S3)
+- `S3_REGION` - AWS region (default: `eu-west-2`)
+- `AWS_ACCESS_KEY_ID` - AWS access key (required if using S3)
+- `AWS_SECRET_ACCESS_KEY` - AWS secret key (required if using S3)
+
+**Email Settings (optional)**
+
+- `MAIL_SERVER` - SMTP server (default: `smtp.gmail.com`)
+- `MAIL_PORT` - SMTP port (default: `587`)
+- `MAIL_USERNAME` - SMTP username
+- `MAIL_PASSWORD` - SMTP password
+
+## Production Deployment (Heroku)
+
+1. Create Heroku app:
+   ```bash
+   heroku create <app-name>
+   heroku addons:create heroku-postgresql:essential-0
+   ```
+
+2. Set environment variables:
+   ```bash
+   heroku config:set FLASK_ENV=production
+   heroku config:set SECRET_KEY=<generate-a-secure-key>
+   heroku config:set STORAGE_BACKEND=s3
+   heroku config:set S3_BUCKET_NAME=<bucket-name>
+   heroku config:set S3_REGION=eu-west-2
+   heroku config:set AWS_ACCESS_KEY_ID=<access-key>
+   heroku config:set AWS_SECRET_ACCESS_KEY=<secret-key>
+   ```
+
+3. Deploy:
+   ```bash
+   git push heroku main
+   ```
+
+4. Initialise database:
+   ```bash
+   heroku run python -c "from garage import create_app; from garage.extensions import db; app = create_app(); app.app_context().push(); db.create_all()"
+   ```
+
+## Admin Access
+
+To grant admin privileges:
+
+```bash
+heroku pg:psql -c "UPDATE users SET is_admin = true WHERE username = '<username>';"
+```
+
+Then access the admin panel at `/admin/`.
+
+## Testing
+
+```bash
+uv run pytest
+```
+
+With coverage:
+```bash
+uv run pytest --cov=src/garage --cov-report=html
 ```
 
 ## License
 
-This project was created as coursework for SET09103 - Advanced Web Technologies.
+MIT
