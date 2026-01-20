@@ -100,34 +100,46 @@ flask --app garage:create_app run --port 8005
 
 Configuration is managed through environment variables and `src/garage/config.py`.
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `FLASK_ENV` | Environment (`development`, `production`, `testing`) | `development` |
-| `SECRET_KEY` | Flask secret key | Required in production |
-| `DATABASE_URL` | Database connection string | SQLite in development |
-| `STORAGE_BACKEND` | `local` or `s3` | `local` in dev, `s3` in prod |
-| `S3_BUCKET_NAME` | AWS S3 bucket name | Required if using S3 |
-| `S3_REGION` | AWS region | `eu-west-2` |
-| `AWS_ACCESS_KEY_ID` | AWS access key | Required if using S3 |
-| `AWS_SECRET_ACCESS_KEY` | AWS secret key | Required if using S3 |
+### Environment Variables
+
+**Core Settings**
+
+- `FLASK_ENV` - Environment: `development`, `production`, or `testing` (default: `development`)
+- `SECRET_KEY` - Flask secret key (required in production)
+- `DATABASE_URL` - Database connection string (defaults to SQLite in development)
+
+**Storage Settings**
+
+- `STORAGE_BACKEND` - Storage type: `local` or `s3` (default: `local` in dev, `s3` in prod)
+- `S3_BUCKET_NAME` - AWS S3 bucket name (required if using S3)
+- `S3_REGION` - AWS region (default: `eu-west-2`)
+- `AWS_ACCESS_KEY_ID` - AWS access key (required if using S3)
+- `AWS_SECRET_ACCESS_KEY` - AWS secret key (required if using S3)
+
+**Email Settings (optional)**
+
+- `MAIL_SERVER` - SMTP server (default: `smtp.gmail.com`)
+- `MAIL_PORT` - SMTP port (default: `587`)
+- `MAIL_USERNAME` - SMTP username
+- `MAIL_PASSWORD` - SMTP password
 
 ## Production Deployment (Heroku)
 
 1. Create Heroku app:
    ```bash
-   heroku create your-app-name
+   heroku create <app-name>
    heroku addons:create heroku-postgresql:essential-0
    ```
 
 2. Set environment variables:
    ```bash
    heroku config:set FLASK_ENV=production
-   heroku config:set SECRET_KEY=your-secure-secret-key
+   heroku config:set SECRET_KEY=<generate-a-secure-key>
    heroku config:set STORAGE_BACKEND=s3
-   heroku config:set S3_BUCKET_NAME=your-bucket
+   heroku config:set S3_BUCKET_NAME=<bucket-name>
    heroku config:set S3_REGION=eu-west-2
-   heroku config:set AWS_ACCESS_KEY_ID=your-key
-   heroku config:set AWS_SECRET_ACCESS_KEY=your-secret
+   heroku config:set AWS_ACCESS_KEY_ID=<access-key>
+   heroku config:set AWS_SECRET_ACCESS_KEY=<secret-key>
    ```
 
 3. Deploy:
@@ -135,7 +147,7 @@ Configuration is managed through environment variables and `src/garage/config.py
    git push heroku main
    ```
 
-4. Run database migrations:
+4. Initialise database:
    ```bash
    heroku run python -c "from garage import create_app; from garage.extensions import db; app = create_app(); app.app_context().push(); db.create_all()"
    ```
@@ -145,7 +157,7 @@ Configuration is managed through environment variables and `src/garage/config.py
 To grant admin privileges:
 
 ```bash
-heroku pg:psql -c "UPDATE users SET is_admin = true WHERE username = 'your-username';"
+heroku pg:psql -c "UPDATE users SET is_admin = true WHERE username = '<username>';"
 ```
 
 Then access the admin panel at `/admin/`.
@@ -160,27 +172,6 @@ With coverage:
 ```bash
 uv run pytest --cov=src/garage --cov-report=html
 ```
-
-## API Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/` | GET | Landing page |
-| `/health` | GET | Health check (returns JSON) |
-| `/register` | GET, POST | User registration |
-| `/login` | GET, POST | User login |
-| `/logout` | GET | User logout |
-| `/dashboard` | GET | List user's boxes |
-| `/box/create` | GET, POST | Create new box |
-| `/box/<id>` | GET | View box details |
-| `/box/<id>/edit` | GET, POST | Edit box |
-| `/box/<id>/delete` | POST | Delete box |
-| `/box/<id>/item/create` | GET, POST | Add item to box |
-| `/item/<id>/edit` | GET, POST | Edit item |
-| `/item/<id>/delete` | POST | Delete item |
-| `/scan` | GET | QR scanner page |
-| `/qr/<id>` | GET | QR code redirect |
-| `/search` | GET | Search boxes and items |
 
 ## License
 
