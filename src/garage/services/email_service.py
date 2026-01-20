@@ -1,24 +1,5 @@
 # src/garage/services/email_service.py
-"""
-Email service for sending transactional emails.
-
-WHAT THIS REPLACES:
-The send_password_reset_email() function from your app.py
-
-WHY A SERVICE CLASS:
-- Groups related email functionality together
-- Easy to add more email types later (welcome email, notifications, etc.)
-- Logging provides visibility into email delivery
-- Testable without actually sending emails
-
-CURRENT FUNCTIONALITY:
-- Password reset emails (with HTML and plain text versions)
-
-FUTURE POSSIBILITIES:
-- Welcome emails after registration
-- Box sharing notifications
-- Weekly inventory summaries
-"""
+"""Email service for transactional emails."""
 import logging
 
 from flask import current_app, url_for
@@ -30,41 +11,16 @@ logger = logging.getLogger(__name__)
 
 
 class EmailService:
-    """
-    Service for sending transactional emails.
-    
-    All methods are static because we don't need instance state.
-    The Flask-Mail extension handles connection pooling.
-    """
+    """Service for sending transactional emails."""
     
     @staticmethod
     def send_password_reset(user) -> bool:
-        """
-        Send password reset email to user.
-        
-        This is extracted from your original send_password_reset_email() function.
-        
-        Args:
-            user: User model instance (needs .email, .username, .get_reset_token())
-        
-        Returns:
-            True if sent successfully (or suppressed in dev), False on error
-        """
-        # Generate the reset token and URL
+        """Send password reset email to user."""
         token = user.get_reset_token()
         reset_url = url_for('auth.reset_password', token=token, _external=True)
         
-        # In development, don't actually send - just log it
-        # This is controlled by MAIL_SUPPRESS_SEND config
         if current_app.config.get('MAIL_SUPPRESS_SEND', False):
-            logger.info(
-                "Password reset email (suppressed in development)",
-                extra={
-                    'user_id': user.id,
-                    'email': user.email,
-                }
-            )
-            # Print for developer convenience - they need to see the link!
+            logger.info("Password reset email (suppressed)", extra={'user_id': user.id, 'email': user.email})
             print(f"\n{'='*60}")
             print("📧 PASSWORD RESET EMAIL (Development Mode)")
             print(f"{'='*60}")
@@ -73,7 +29,6 @@ class EmailService:
             print(f"{'='*60}\n")
             return True
         
-        # Build the email message
         msg = Message(
             subject='Password Reset Request - Garage Inventory',
             recipients=[user.email]
@@ -81,38 +36,21 @@ class EmailService:
         msg.body = EmailService._get_reset_email_text(user.username, reset_url)
         msg.html = EmailService._get_reset_email_html(user.username, reset_url)
         
-        # Try to send
         try:
             mail.send(msg)
-            logger.info(
-                "Password reset email sent",
-                extra={'user_id': user.id, 'email': user.email}
-            )
+            logger.info("Password reset email sent", extra={'user_id': user.id, 'email': user.email})
             return True
-            
         except Exception as e:
-            # Log the error with full details for debugging
-            logger.error(
-                "Failed to send password reset email",
-                extra={
-                    'user_id': user.id,
-                    'email': user.email,
-                    'error': str(e)
-                },
-                exc_info=True  # Include stack trace
-            )
+            logger.error("Failed to send password reset email", extra={
+                'user_id': user.id,
+                'email': user.email,
+                'error': str(e)
+            }, exc_info=True)
             return False
     
     @staticmethod
     def _get_reset_email_text(username: str, reset_url: str) -> str:
-        """
-        Generate plain text email content.
-        
-        Plain text version is important because:
-        - Some email clients don't render HTML
-        - Spam filters sometimes prefer plain text
-        - Accessibility (screen readers)
-        """
+        """Generate plain text email content."""
         return f"""Hello {username},
 
 You requested to reset your password for Garage Inventory.
@@ -130,12 +68,7 @@ Garage Inventory
 
     @staticmethod
     def _get_reset_email_html(username: str, reset_url: str) -> str:
-        """
-        Generate HTML email content.
-        
-        HTML version provides better formatting and a clickable button.
-        Inline styles are used because email clients strip <style> tags.
-        """
+        """Generate HTML email content."""
         return f"""
 <!DOCTYPE html>
 <html>
